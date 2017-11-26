@@ -1,6 +1,6 @@
 ARCHS = armv7 arm64
-BUNDLE_NAME = xyz.xninja.dopesettings
-xyz.xninja.dopesettings_INSTALL_PATH = /private/var/mobile/Library/Application Support
+BUNDLE_NAME = defaults
+defaults_INSTALL_PATH = /Library/Application Support/DopeSettings
 
 
 include ~/theos/makefiles/common.mk

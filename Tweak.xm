@@ -25,27 +25,44 @@
   NSMutableArray *specifiers = [self specifiers];
   // laod substitute strings from plist file
   // loading it from a file allows the tweak to use custom strings user puts in it
-  NSDictionary* substituteStrings = [NSDictionary dictionaryWithContentsOfFile:@"/private/var/mobile/Library/Application Support/xyz.xninja.dopesettings.bundle/substitutes.plist"];
+  NSDictionary *substituteStrings = [NSDictionary dictionaryWithContentsOfFile:@"/Library/Application Support/DopeSettings/defaults.bundle/defaults.plist"];
+  NSMutableDictionary *userStrings = [NSMutableDictionary dictionaryWithContentsOfFile:@"/private/var/mobile/Library/Preferences/xyz.xninja.dopesettings.plist"];
+  if(!userStrings)
+  {
+    userStrings = [[NSMutableDictionary alloc] init];
+  }
   // NSDictionary to capture all available specifier IDs
-
-  NSMutableDictionary *referenceIDs = [[NSMutableDictionary alloc] init];
   for(PSSpecifier *specifier in specifiers)
   {
     if(specifier.identifier)
     {
-      // add specifier ID to the dictionary
-      [referenceIDs setValue:specifier.name forKey:specifier.identifier];
 
-      // specifier name is what the cell uses as title. Replacing the name with substitute from the plist
-      if(NSString *substitute = [substituteStrings objectForKey:specifier.identifier])
+      NSString *userSubstitute = [userStrings objectForKey:specifier.identifier];
+      NSString *substitute = [substituteStrings objectForKey:specifier.identifier];
+
+      // if user has set a substitute that's not any default value, use it
+      if(![userSubstitute isEqualToString:specifier.name] && ![substitute isEqualToString:specifier.name] && [userSubstitute length])
       {
-        specifier.name = substitute;
+        specifier.name = userSubstitute;
+      }
+      else
+      {
+        // if user substitute is not used, add the system default value to dictionary
+        if(specifier.name)
+        {
+          [userStrings setObject:specifier.name forKey:specifier.identifier];
+        }
+        // user tweak default if one exists
+        if([substitute length])
+        {
+          specifier.name = substitute;
+        }
       }
     }
   }
 
-  // write available IDs to Documents so that user can use it as a reference when editing the substitutes.plist
-  [referenceIDs writeToFile:@"/private/var/mobile/Library/Application Support/xyz.xninja.dopesettings.bundle/referenceIDs.plist" atomically:TRUE];
+  // write available IDs and names so that user can use set their own values
+  [userStrings writeToFile:@"/private/var/mobile/Library/Preferences/xyz.xninja.dopesettings.plist" atomically:TRUE];
 }
 
 - (int)numberOfSectionsInTableView:(id)arg1
