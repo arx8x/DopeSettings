@@ -1,7 +1,7 @@
 Package: xyz.xninja.dopesettings
 Name: DopeSettings
 Depends: mobilesubstrate
-Version: 0.0.3
+Version: 0.0.4
 Architecture: iphoneos-arm
 Description: Spice up the settings view
 Maintainer: ARX8x
