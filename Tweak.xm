@@ -1,7 +1,6 @@
 #include "Preferences/PSSpecifier.h"
 
 
-
 @interface PSUIPrefsListController
 
 @property (nonatomic, assign) BOOL performedActions;
@@ -21,11 +20,40 @@
 -(void)substituteSpecifierNames
 {
   // my favorite debugger, the UIAlertView
-  // [[[UIAlertView alloc] initWithTitle:@"Performing Actions" message:nil delegate:self cancelButtonTitle:@"Ok" otherButtonTitles:nil] show];
+  // [[[UIAlertView alloc] initWithTitle:@"Performing Actions" message:[NSString stringWithFormat:@"%@", MGCopyAnswer(CFSTR("BasebandCertId"))] delegate:self cancelButtonTitle:@"Ok" otherButtonTitles:nil] show];
+
   NSMutableArray *specifiers = [self specifiers];
   // laod substitute strings from plist file
   // loading it from a file allows the tweak to use custom strings user puts in it
-  NSDictionary *substituteStrings = [NSDictionary dictionaryWithContentsOfFile:@"/Library/Application Support/DopeSettings/defaults.bundle/defaults.plist"];
+
+
+  NSDictionary *substituteStrings =
+  @{
+    @"AIRPLANE_MODE" : @"no NSA mode",
+    @"Bluetooth" : @"Are your teeth blue yet?",
+    @"CASTLE" : @"Nude leak center",
+    @"COMPASS" : @"Fancy useless shit",
+    @"CONTACTS" : @"Telephone Directory",
+    @"Carrier" : @"Radiation provider",
+    @"ControlCenter" : @"Control my Centre ( ͡° ͜ʖ ͡°)",
+    @"DISPLAY" : @"Display & Blindness",
+    @"DO_NOT_DISTURB" : @"Shut the fuck up plz",
+    @"General" : @"Actual settings you're looking for",
+    @"INTERNET_TETHERING" : @"Magical ability to give out internet",
+    @"MAPS" : @"To the ocean",
+    @"MOBILE_DATA_SETTINGS_ID" : @"Heating mode",
+    @"NOTES" : @"Scribblings",
+    @"NOTIFICATIONS_ID" : @"Attention grabbing options",
+    @"Phone" : @"Telephone",
+    @"Privacy" : @"High five brah",
+    @"REMINDERS" : @"Procasturbator",
+    @"SIRI" : @"Dumbass",
+    @"Sounds" : @"Noises n' shit",
+    @"VPN" : @"Alternate Spy Network",
+    @"WIFI" : @"Internet from thin air"
+  };
+
+  // NSDictionary *substituteStrings = [NSDictionary dictionaryWithContentsOfFile:@"/Library/Application Support/DopeSettings/defaults.bundle/defaults.plist"];
   NSMutableDictionary *userStrings = [NSMutableDictionary dictionaryWithContentsOfFile:@"/private/var/mobile/Library/Preferences/xyz.xninja.dopesettings.plist"];
   if(!userStrings)
   {
@@ -36,7 +64,6 @@
   {
     if(specifier.identifier)
     {
-
       NSString *userSubstitute = [userStrings objectForKey:specifier.identifier];
       NSString *substitute = [substituteStrings objectForKey:specifier.identifier];
 
@@ -46,13 +73,11 @@
         specifier.name = userSubstitute;
       }
       else
-      {
-        // if user substitute is not used, add the system default value to dictionary
+      {        // if user substitute is not used, add the system default value to dictionary
         if(specifier.name)
         {
           [userStrings setObject:specifier.name forKey:specifier.identifier];
         }
-        // user tweak default if one exists
         if([substitute length])
         {
           specifier.name = substitute;
