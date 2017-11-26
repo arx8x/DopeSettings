@@ -16,7 +16,7 @@ Preference is given to user's strings.
 
 Edit `/private/var/mobile/Library/Preferences/xyz.xninja.dopesettings.plist`
 
-Example would key-value pair looks like
+Example key-value pair looks like
 ```
 <key>net.whatsapp.WhatsApp</key>
 <string>WhatsApp</string>
