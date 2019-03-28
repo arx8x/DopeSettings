@@ -15,4 +15,4 @@ DopeSettings_FRAMEWORKS = UIKit
 include ~/theos/makefiles/tweak.mk
 
 after-install::
-	install.exec "killall -9 Preferences"
+	install.exec "rm -f /private/var/mobile/Library/Preferences/xyz.xninja.dopesettings.plist"

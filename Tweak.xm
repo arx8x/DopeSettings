@@ -1,6 +1,8 @@
 #include "Preferences/PSSpecifier.h"
 
 
+
+
 @interface PSUIPrefsListController
 
 @property (nonatomic, assign) BOOL performedActions;
@@ -9,6 +11,10 @@
 -(void)substituteSpecifierNames;
 @end
 
+static bool isAprilFools = false;
+const PSSpecifier *appleAccountSpecifier = NULL;
+
+
 
 %hook PSUIPrefsListController
 
@@ -16,11 +22,47 @@
 %property (nonatomic, assign) BOOL performedActions;
 
 
+
+-(id) specifiers
+{
+  NSDateComponents *components = [[NSCalendar currentCalendar] components:NSDayCalendarUnit | NSMonthCalendarUnit fromDate:[NSDate date]];
+  if([components month] == 4 && [components day] == 1)
+  {
+    isAprilFools = true;
+  }
+  NSMutableArray *specifiers = %orig;
+  for(PSSpecifier *specifier in specifiers)
+  {
+    if(specifier.identifier)
+    {
+      // April fools'
+      if([specifier.identifier isEqualToString:@"APPLE_ACCOUNT"] && isAprilFools)
+      {
+        appleAccountSpecifier = specifier;
+      }
+    }
+  }
+
+  return specifiers;
+}
+- (void)reloadSpecifierAtIndex:(long long)arg1 animated:(bool)arg2
+{
+  %orig;
+  // fix the specifier changing back after tapping the cell
+  if(appleAccountSpecifier && isAprilFools)
+  {
+    [appleAccountSpecifier setProperty:@"Ian Beer" forKey:@"label"];
+    UIImage *iconImage = [UIImage imageWithContentsOfFile:@"/Library/Application Support/TimApple.png"];
+    [appleAccountSpecifier setProperty:iconImage forKey:@"iconImage"];
+  }
+  [self reload];
+}
+
+
+
 %new
 -(void)substituteSpecifierNames
 {
-  // my favorite debugger, the UIAlertView
-  // [[[UIAlertView alloc] initWithTitle:@"Performing Actions" message:[NSString stringWithFormat:@"%@", MGCopyAnswer(CFSTR("BasebandCertId"))] delegate:self cancelButtonTitle:@"Ok" otherButtonTitles:nil] show];
 
   NSMutableArray *specifiers = [self specifiers];
   // laod substitute strings from plist file
@@ -80,6 +122,10 @@
       @"SIRI" : @"Dumbass",
       @"Sounds" : @"Noises n' shit",
       @"VPN" : @"Alternate Spy Network",
+      @"SCREEN_TIME" : @"OCD reports",
+      @"MAIL" : @"Carrier Pigeons",
+      @"SAFARI" : @"Chrome.exe",
+      @"BATTERY_USAGE" : @"Jailbreaker OCD Center",
       @"WIFI" : @"Internet from thin air"
     }];
   }
@@ -88,6 +134,24 @@
   {
     if(specifier.identifier)
     {
+      if(specifier.identifier)
+      {
+        // April fools'
+        if(isAprilFools)
+        {
+          if([specifier.identifier isEqualToString:@"APPLE_ACCOUNT"] )
+          {
+            [specifier setProperty:@"Ian Beer" forKey:@"label"];
+            UIImage *iconImage = [UIImage imageWithContentsOfFile:@"/Library/Application Support/TimApple.png"];
+            [specifier setProperty:iconImage forKey:@"iconImage"];
+          }
+          else
+          {
+            [specifier setProperty:[UIImage imageWithContentsOfFile:@"/Library/Application Support/ico.png"] forKey:@"iconImage"];
+          }
+        }
+      }
+
       NSString *substitute = [substituteStrings objectForKey:specifier.identifier];
 
       // if user has set a substitute that's not any default value, use it
@@ -107,9 +171,9 @@
   [substituteStrings writeToFile:@"/private/var/mobile/Library/Preferences/xyz.xninja.dopesettings.plist" atomically:TRUE];
 }
 
-- (int)numberOfSectionsInTableView:(id)arg1
+// - (int)numberOfSectionsInTableView:(id)arg1
+-(void)viewWillLayoutSubviews
 {
-  //this method is called before view is loaded but more than once. Names need to be substituted only once
   if(!self.performedActions)
   {
     [self substituteSpecifierNames];
